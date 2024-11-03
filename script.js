@@ -5,28 +5,30 @@ document.getElementById('recommendButton').addEventListener('click', async () =>
     // Clear previous recommendations
     recommendationsDiv.innerHTML = '';
 
-    // Mock API request (replace with your actual API endpoint)
-    const recommendations = await getRecommendations(userInput);
+    try {
+        // Call the Flask backend
+        const response = await fetch('http://127.0.0.1:5000/recommend', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ input: userInput })
+        });
 
-    // Display recommendations
-    recommendations.forEach(item => {
-        const p = document.createElement('p');
-        p.textContent = item;
-        recommendationsDiv.appendChild(p);
-    });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const recommendations = await response.json();
+
+        // Display recommendations
+        recommendations.forEach(item => {
+            const p = document.createElement('p');
+            p.textContent = item;
+            recommendationsDiv.appendChild(p);
+        });
+    } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        recommendationsDiv.innerHTML = '<p>Error fetching recommendations. Please try again.</p>';
+    }
 });
-
-// Mock function to simulate API call
-async function getRecommendations(input) {
-    // Replace this with a real API call to your recommendation engine
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const mockData = [
-                `Recommended for "${input}": Item 1`,
-                `Recommended for "${input}": Item 2`,
-                `Recommended for "${input}": Item 3`
-            ];
-            resolve(mockData);
-        }, 1000);
-    });
-}
